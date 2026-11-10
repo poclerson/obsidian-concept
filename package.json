@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "node esbuild.config.mjs",
+    "dev:harness": "esbuild dev/harness.ts --bundle --format=esm --platform=browser --target=es2018 --sourcemap --outfile=dev/harness.js",
     "build": "tsc --noEmit && node esbuild.config.mjs production",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

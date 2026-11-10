@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Concepts Viewer renderer harness</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background: #222;
+        color: #eee;
+      }
+      header {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        padding: 8px 12px;
+        background: #333;
+      }
+      #host {
+        position: relative;
+        flex: 1;
+        min-height: 0;
+      }
+      #canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        touch-action: none;
+      }
+      #status {
+        position: absolute;
+        left: 12px;
+        bottom: 12px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        background: rgba(0, 0, 0, 0.65);
+        font-size: 12px;
+      }
+      button {
+        padding: 4px 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <input id="file" type="file" accept=".concept" />
+      <button id="fit">Fit</button>
+      <button id="saved">Saved view</button>
+      <button id="zoom-in">+</button>
+      <button id="zoom-out">−</button>
+      <button id="background">Background</button>
+      <button id="grid">Grid</button>
+      <span>Open with <code>?file=/path/to/file.concept</code></span>
+    </header>
+    <div id="host">
+      <canvas id="canvas"></canvas>
+      <div id="status">No document loaded</div>
+    </div>
+    <script type="module" src="./harness.js"></script>
+  </body>
+</html>
