@@ -1,0 +1,35 @@
+{
+  "name": "obsidian-concept",
+  "version": "0.1.0",
+  "description": "View Concepts app .concept drawings inside Obsidian.",
+  "main": "main.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "tsc --noEmit && node esbuild.config.mjs production",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "npm run typecheck && npm run test"
+  },
+  "keywords": [
+    "obsidian",
+    "concepts",
+    "concept",
+    "drawing",
+    "viewer",
+    "canvas"
+  ],
+  "author": "Pierre-Olivier Clerson",
+  "license": "MIT",
+  "dependencies": {
+    "fflate": "^0.8.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.25.0",
+    "obsidian": "^1.9.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "obsidian-concept",
+  "name": "Concepts Viewer",
+  "version": "0.1.0",
+  "minAppVersion": "1.7.2",
+  "description": "Open and explore Concepts app .concept drawings, with zoom, pan, layers, and light/dark backgrounds.",
+  "author": "Pierre-Olivier Clerson",
+  "authorUrl": "https://github.com/poclerson",
+  "isDesktopOnly": false
+}
