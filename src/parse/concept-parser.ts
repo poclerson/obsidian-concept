@@ -186,6 +186,7 @@ function parseItems(
 
     if (
       raw["strokePointsNonOptionalAngles"] !== undefined ||
+      raw["strokePoints45"] !== undefined ||
       className === "Stroke"
     ) {
       item = parseStroke(objects, raw, index, warnings);
@@ -221,7 +222,10 @@ function parseStroke(
   warnings: string[],
 ): Stroke | null {
   const pointsData = asData(
-    deref(objects, raw["strokePointsNonOptionalAngles"]),
+    deref(
+      objects,
+      raw["strokePointsNonOptionalAngles"] ?? raw["strokePoints45"],
+    ),
   );
   if (!pointsData || pointsData.byteLength < 16) {
     warnings.push(`Stroke ${index} has no point data.`);
@@ -229,13 +233,13 @@ function parseStroke(
   }
 
   const transform = parseMat4(asData(deref(objects, raw["diSavedTransform"])));
-  const scale = mat4Scale(transform);
   const brush = asDict(deref(objects, raw["brushProperties"]));
   const tool = brush ? asNumber(deref(objects, brush["brushToolNew"])) : null;
+  // brushWidth is stored in world units and is independent of the transform.
+  // Fill strokes carry no width at all.
   const brushWidth =
-    (brush ? asNumber(deref(objects, brush["brushWidth"])) : null) ??
-    defaultBrushWidth(tool);
-  const width = Math.max(0.001, brushWidth * scale);
+    (brush ? asNumber(deref(objects, brush["brushWidth"])) : null) ?? 0;
+  const width = tool === 11 ? 0 : Math.max(0.001, brushWidth || defaultBrushWidth(tool));
   const opacity = brush
     ? clamp01(asNumber(deref(objects, brush["brushAlpha"])) ?? 1)
     : 1;
@@ -257,7 +261,14 @@ function parseStroke(
     width,
     color,
     opacity,
+    brushTool: tool,
     isEraser: asBoolean(raw["isEraser"]) === true,
+    // Tool ids 0 and 13 are the hard and soft masks. They carry no colour and
+    // the app leaves no visible coverage where they are.
+    isMask: tool === 0 || tool === 13,
+    // Tool 11 is the fill tool: a closed contour painted with a solid color.
+    isFill: tool === 11,
+    closed: asBoolean(raw["closed"]) === true,
     hasPressure: asBoolean(raw["containsPressure"]) === true,
     bounds,
   };
@@ -504,6 +515,8 @@ function buildLayers(
       return {
         id: asString(deref(objects, raw["diIdentifier"])) ?? `layer-${index}`,
         name: asString(deref(objects, raw["name"])) ?? `Layer ${index}`,
+        visible: asBoolean(deref(objects, raw["diVisible"])) !== false,
+        opacity: clamp01(asNumber(deref(objects, raw["alpha"])) ?? 1),
         children,
       };
     } finally {
@@ -527,7 +540,13 @@ function buildLayers(
     }
   }
   if (unplaced.length > 0) {
-    layers.push({ id: "ungrouped", name: "Ungrouped", children: unplaced });
+    layers.push({
+      id: "ungrouped",
+      name: "Ungrouped",
+      visible: true,
+      opacity: 1,
+      children: unplaced,
+    });
   }
 
   if (layers.length === 0 && itemsByObject.size > 0) {
@@ -546,6 +565,8 @@ function fallbackLayers(itemsByObject: Map<number, ConceptItem>): LayerNode[] {
     {
       id: "drawing",
       name: "Drawing",
+      visible: true,
+      opacity: 1,
       children: Array.from(itemsByObject.values()).map((item) => ({
         kind: "item",
         item,
@@ -556,17 +577,24 @@ function fallbackLayers(itemsByObject: Map<number, ConceptItem>): LayerNode[] {
 
 function flattenLayers(layers: LayerNode[]): ConceptItem[] {
   const items: ConceptItem[] = [];
-  const visit = (layer: LayerNode): void => {
+  const visit = (layer: LayerNode, inheritedOpacity: number): void => {
+    if (!layer.visible) {
+      return;
+    }
+    const opacity = clamp01(inheritedOpacity * clamp01(layer.opacity));
     for (const child of layer.children) {
       if (child.kind === "item") {
+        if (opacity < 1) {
+          child.item.opacity = clamp01(child.item.opacity * opacity);
+        }
         items.push(child.item);
       } else {
-        visit(child.layer);
+        visit(child.layer, opacity);
       }
     }
   };
   for (const layer of layers) {
-    visit(layer);
+    visit(layer, 1);
   }
   return items;
 }

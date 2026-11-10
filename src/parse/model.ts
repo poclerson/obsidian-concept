@@ -34,7 +34,15 @@ export interface Stroke {
   width: number;
   color: Color;
   opacity: number;
+  /** Concepts brush tool id, when present. */
+  brushTool: number | null;
   isEraser: boolean;
+  /** Mask tools (hard/soft mask) paint nothing. */
+  isMask: boolean;
+  /** Fill strokes are closed shapes painted with a solid color. */
+  isFill: boolean;
+  /** Close the path from the last point back to the first. */
+  closed: boolean;
   hasPressure: boolean;
   bounds: Rect;
 }
@@ -97,6 +105,8 @@ export type LayerChild = LayerEntry | LayerNodeEntry;
 export interface LayerNode {
   id: string;
   name: string;
+  visible: boolean;
+  opacity: number;
   children: LayerChild[];
 }
 
