@@ -1,6 +1,8 @@
 node_modules/
 main.js
 main.js.map
+dev/harness.js
+dev/harness.js.map
 coverage/
 .DS_Store
 *.log
